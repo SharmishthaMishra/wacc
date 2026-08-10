@@ -78,32 +78,40 @@
             <section class="lg:col-span-8 space-y-10">
                 
                 <!-- Core Valuation Summary Cards -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white min-w-0">
                         <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">WACC</p>
-                        <p class="text-xl font-semibold text-zinc-900 mt-1">{{ model.get('wacc', 0.0) }}%</p>
+                        <p class="text-lg xl:text-xl font-semibold text-zinc-900 mt-1 truncate" title="{{ model.get('wacc', 0.0) }}%">
+                            {{ model.get('wacc', 0.0) }}%
+                        </p>
                     </div>
 
-                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white min-w-0">
                         <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">NPV</p>
-                        <p class="text-xl font-semibold text-zinc-900 mt-1">${{ "{:,.0f}".format(model.get('npv', 0.0)) }}</p>
+                        <p class="text-lg xl:text-xl font-semibold text-zinc-900 mt-1 truncate" title="${{ "{:,.0f}".format(model.get('npv', 0.0)) }}">
+                            ${{ "{:,.0f}".format(model.get('npv', 0.0)) }}
+                        </p>
                     </div>
 
-                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white min-w-0">
                         <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">IRR</p>
-                        <p class="text-xl font-semibold text-zinc-900 mt-1">{{ model.get('irr', 'N/A') }}%</p>
+                        <p class="text-lg xl:text-xl font-semibold text-zinc-900 mt-1 truncate" title="{{ model.get('irr', 'N/A') }}%">
+                            {{ model.get('irr', 'N/A') }}%
+                        </p>
                     </div>
 
-                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white min-w-0">
                         <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Payback</p>
-                        <p class="text-xl font-semibold text-zinc-900 mt-1">{{ model.get('payback_period', 'N/A') }} Yrs</p>
+                        <p class="text-lg xl:text-xl font-semibold text-zinc-900 mt-1 truncate" title="{{ model.get('payback_period', 'N/A') }} Yrs">
+                            {{ model.get('payback_period', 'N/A') }} Yrs
+                        </p>
                     </div>
                 </div>
 
                 <!-- Historical Ratios Table -->
                 <div class="space-y-3">
                     <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Historical Liquidity Ratios</h3>
-                    <div class="border border-zinc-200 rounded-lg overflow-hidden">
+                    <div class="border border-zinc-200 rounded-lg overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-zinc-50 border-b border-zinc-200 text-xs font-medium text-zinc-500">
                                 <tr>
@@ -140,7 +148,7 @@
                 <!-- 5-Year DCF Table -->
                 <div class="space-y-3">
                     <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">5-Year Projected Cash Flows</h3>
-                    <div class="border border-zinc-200 rounded-lg overflow-hidden">
+                    <div class="border border-zinc-200 rounded-lg overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-zinc-50 border-b border-zinc-200 text-xs font-medium text-zinc-500">
                                 <tr>
