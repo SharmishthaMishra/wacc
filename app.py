@@ -4,53 +4,68 @@ import numpy as np
 
 app = Flask(__name__)
 
-#cleanse extracted data
 def load_data():
-    raw_df = pd.read_excel('raw_financials.xlsx', skiprows=1)
+    raw_df = pd.read_excel('raw_financials.xlsx', sheet_name='Raw_Financials', index_col=0)
     
-    raw_df.columns = ['Metric', 'Year_2022', 'Year_2023', 'Year_2024']
+    # Standardize index strings by stripping whitespace
+    raw_df.index = raw_df.index.astype(str).str.strip()
     
-    raw_df['Metric'] = raw_df['Metric'].astype(str).str.strip()
+    # Sort columns by date (oldest to newest)
+    cols = sorted(raw_df.columns, key=lambda x: str(x))
     
-    df = raw_df.dropna(subset=['Metric']).set_index('Metric')
+    # Map raw yfinance row labels with fallbacks for variations
+    def get_row_val(possible_keys, col):
+        for key in possible_keys:
+            if key in raw_df.index:
+                val = raw_df.loc[key, col]
+                if isinstance(val, pd.Series):
+                    val = val.iloc[0]
+                if not pd.isna(val):
+                    return float(val)
+        return 0.0
+
+    # Map the latest 3 historical years available from yfinance
+    years_keys = ['Year_2022', 'Year_2023', 'Year_2024']
+    selected_cols = cols[-3:] if len(cols) >= 3 else cols
     
     liquidity = {}
-    years = ['Year_2022', 'Year_2023', 'Year_2024']
-    
-    for yr in years:
-        ca = float(df.loc['Total Current Assets', yr])
-        cl = float(df.loc['Total Current Liabilities', yr])
-        cash = float(df.loc['Cash and Cash Equivalents', yr])
-        sec = float(df.loc['Marketable Securities', yr])
-        ar = float(df.loc['Accounts Receivable', yr])
+    fcf_by_year = {}
+
+    for i, col in enumerate(selected_cols):
+        yr_key = years_keys[i] if i < len(years_keys) else f"Year_{i}"
         
-        current_ratio = ca / cl
-        quick_ratio = (cash + sec + ar) / cl
-        cash_ratio = (cash + sec) / cl
-        
-        liquidity[yr] = {
+        ca = get_row_val(['Current Assets', 'Total Current Assets'], col)
+        cl = get_row_val(['Current Liabilities', 'Total Current Liabilities'], col)
+        cash = get_row_val(['Cash And Cash Equivalents', 'Cash Cash Equivalents And Short Term Investments'], col)
+        sec = get_row_val(['Other Short Term Investments', 'Marketable Securities'], col)
+        ar = get_row_val(['Receivables', 'Accounts Receivable'], col)
+        fcf = get_row_val(['Free Cash Flow', 'Operating Cash Flow'], col)
+
+        current_ratio = ca / cl if cl != 0 else 0
+        quick_ratio = (cash + sec + ar) / cl if cl != 0 else 0
+        cash_ratio = (cash + sec) / cl if cl != 0 else 0
+
+        liquidity[yr_key] = {
             'Current_Ratio': round(current_ratio, 2),
             'Quick_Ratio': round(quick_ratio, 2),
             'Cash_Ratio': round(cash_ratio, 2)
         }
-        
-    return df, liquidity
+        fcf_by_year[yr_key] = fcf
 
-# wacc model 
+    return raw_df, liquidity, fcf_by_year
+
 def run_wacc(cost_of_equity, cost_of_debt, tax_rate, equity_weight, debt_weight, initial_investment, growth_rate, forecast_years=5):
-    
     wacc = (equity_weight * cost_of_equity) + (debt_weight * cost_of_debt * (1 - tax_rate))
     
-    # Pull baseline Free Cash Flow from recent historical year (2024) in raw_financials.xlsx
-    df, _ = load_data()
-    base_fcf = float(df.loc['Free Cash Flow (FCF)', 'Year_2024'])
+    _, _, fcf_by_year = load_data()
+    # Pull baseline Free Cash Flow from the most recent historical year in raw_financials.xlsx
+    base_fcf = fcf_by_year.get('Year_2024', list(fcf_by_year.values())[-1] if fcf_by_year else 1000000)
     
     projected_fcf = []
     discounted_fcf = []
     cumulative_cash = -initial_investment
     payback_period = None
     
-    # Multi-year cash flow projections and discounting
     for t in range(1, forecast_years + 1):
         fcf = base_fcf * ((1 + growth_rate) ** t)
         dfcf = fcf / ((1 + wacc) ** t)
@@ -60,13 +75,9 @@ def run_wacc(cost_of_equity, cost_of_debt, tax_rate, equity_weight, debt_weight,
         
         cumulative_cash += fcf
         if cumulative_cash >= 0 and payback_period is None:
-            # Linear interpolation for payback calculation
             payback_period = (t - 1) + ((initial_investment - sum(projected_fcf[:-1])) / fcf)
             
-    # Net Present Value (NPV)
     npv = sum(discounted_fcf) - initial_investment
-    
-    # Internal Rate of Return (IRR) numerical calculation
     cash_flows = [-initial_investment] + projected_fcf
     irr_val = get_irr(cash_flows)
     
@@ -81,7 +92,6 @@ def run_wacc(cost_of_equity, cost_of_debt, tax_rate, equity_weight, debt_weight,
     }
 
 def get_irr(cash_flows, iterations=1000):
-    # Newton-Raphson method for IRR evaluation
     rate = 0.10
     for _ in range(iterations):
         npv = sum([cf / ((1 + rate) ** i) for i, cf in enumerate(cash_flows)])
@@ -95,9 +105,8 @@ def get_irr(cash_flows, iterations=1000):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    df, liquidity = load_data()
+    _, liquidity, _ = load_data()
     
-    # Capture user form inputs or set financial model defaults
     cost_of_equity = float(request.form.get('cost_of_equity', 0.10))
     cost_of_debt = float(request.form.get('cost_of_debt', 0.05))
     tax_rate = 0.21
