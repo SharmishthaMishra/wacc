@@ -5,155 +5,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WACC & DCF Financial Model</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen p-6">
-    <div class="max-w-6xl mx-auto space-y-8">
+<body class="bg-white text-zinc-900 min-h-screen antialiased selection:bg-zinc-100">
+    <div class="max-w-5xl mx-auto px-6 py-12 space-y-12">
         
         <!-- Header -->
-        <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+        <header class="flex justify-between items-baseline border-b border-zinc-200 pb-6">
             <div>
-                <h1 class="text-3xl font-bold text-white tracking-tight">WACC & DCF Analytics</h1>
-                <p class="text-gray-400 text-sm mt-1">SEC 10-K Ingestion & Capital Structure Model</p>
+                <h1 class="text-2xl font-medium tracking-tight text-zinc-900">WACC & DCF Model</h1>
+                <p class="text-sm text-zinc-500 mt-1 font-normal">Caterpillar Inc. (CAT) Valuation Analytics</p>
             </div>
-            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono px-3 py-1 rounded-full">
-                LIVE MODEL
+            <span class="inline-flex items-center gap-1.5 text-xs text-zinc-600 font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                LIVE DATA
             </span>
-        </div>
+        </header>
 
-        <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Layout Grid -->
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            <!-- Input Form -->
-            <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 shadow-xl">
-                <h2 class="text-xl font-semibold text-white mb-4">Model Inputs</h2>
+            <!-- Left Column: Inputs Form -->
+            <section class="lg:col-span-4 space-y-6">
+                <div>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Model Parameters</h2>
+                    <p class="text-xs text-zinc-500 mt-0.5">Adjust inputs to recalculate valuation.</p>
+                </div>
+
                 <form action="/" method="POST" class="space-y-4">
                     
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-1">Cost of Equity (Decimal)</label>
-                        <input type="number" step="0.01" name="cost_of_equity" value="{{ inputs.cost_of_equity }}" 
-                               class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-zinc-700">Cost of Equity</label>
+                        <input type="number" step="0.01" name="cost_of_equity" value="{{ inputs.get('cost_of_equity', 0.10) }}" 
+                               class="w-full bg-zinc-50 border border-zinc-200 rounded-md px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white transition-colors">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-1">Cost of Debt (Decimal)</label>
-                        <input type="number" step="0.01" name="cost_of_debt" value="{{ inputs.cost_of_debt }}" 
-                               class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-zinc-700">Cost of Debt</label>
+                        <input type="number" step="0.01" name="cost_of_debt" value="{{ inputs.get('cost_of_debt', 0.05) }}" 
+                               class="w-full bg-zinc-50 border border-zinc-200 rounded-md px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white transition-colors">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-1">Equity Weight (0 to 1)</label>
-                        <input type="number" step="0.01" min="0" max="1" name="equity_weight" value="{{ inputs.equity_weight }}" 
-                               class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-zinc-700">Equity Weight (0–1)</label>
+                        <input type="number" step="0.01" min="0" max="1" name="equity_weight" value="{{ inputs.get('equity_weight', 0.70) }}" 
+                               class="w-full bg-zinc-50 border border-zinc-200 rounded-md px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white transition-colors">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-1">Initial Investment ($)</label>
-                        <input type="number" step="100000" name="initial_investment" value="{{ inputs.initial_investment }}" 
-                               class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-zinc-700">Initial Investment ($)</label>
+                        <input type="number" step="100000" name="initial_investment" value="{{ inputs.get('initial_investment', 25000000) }}" 
+                               class="w-full bg-zinc-50 border border-zinc-200 rounded-md px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white transition-colors">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 uppercase mb-1">FCF Growth Rate (Decimal)</label>
-                        <input type="number" step="0.01" name="growth_rate" value="{{ inputs.growth_rate }}" 
-                               class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-zinc-700">FCF Growth Rate</label>
+                        <input type="number" step="0.01" name="growth_rate" value="{{ inputs.get('growth_rate', 0.05) }}" 
+                               class="w-full bg-zinc-50 border border-zinc-200 rounded-md px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-900 focus:bg-white transition-colors">
                     </div>
 
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg transition duration-200">
-                        Recalculate Model
+                    <button type="submit" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-sm py-2.5 rounded-md transition-colors shadow-sm">
+                        Recalculate
                     </button>
                 </form>
-            </div>
+            </section>
 
-            <!-- Model Results Dashboard -->
-            <div class="lg:col-span-2 space-y-6">
+            <!-- Right Column: Outputs Dashboard -->
+            <section class="lg:col-span-8 space-y-10">
                 
-                <!-- Metric Cards -->
+                <!-- Core Valuation Summary Cards -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="bg-gray-800/50 border border-gray-700/50 p-4 rounded-xl">
-                        <p class="text-xs font-mono text-gray-400">WACC</p>
-                        <p class="text-2xl font-bold text-indigo-400 mt-1">{{ model.wacc }}%</p>
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                        <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">WACC</p>
+                        <p class="text-xl font-semibold text-zinc-900 mt-1">{{ model.get('wacc', 0.0) }}%</p>
                     </div>
 
-                    <div class="bg-gray-800/50 border border-gray-700/50 p-4 rounded-xl">
-                        <p class="text-xs font-mono text-gray-400">NPV ($)</p>
-                        <p class="text-2xl font-bold text-emerald-400 mt-1">${{ "{:,.0f}".format(model.npv) }}</p>
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                        <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">NPV</p>
+                        <p class="text-xl font-semibold text-zinc-900 mt-1">${{ "{:,.0f}".format(model.get('npv', 0.0)) }}</p>
                     </div>
 
-                    <div class="bg-gray-800/50 border border-gray-700/50 p-4 rounded-xl">
-                        <p class="text-xs font-mono text-gray-400">IRR</p>
-                        <p class="text-2xl font-bold text-sky-400 mt-1">{{ model.irr }}%</p>
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                        <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">IRR</p>
+                        <p class="text-xl font-semibold text-zinc-900 mt-1">{{ model.get('irr', 'N/A') }}%</p>
                     </div>
 
-                    <div class="bg-gray-800/50 border border-gray-700/50 p-4 rounded-xl">
-                        <p class="text-xs font-mono text-gray-400">Payback</p>
-                        <p class="text-2xl font-bold text-amber-400 mt-1">{{ model.payback_period }} Yrs</p>
+                    <div class="border border-zinc-200 rounded-lg p-4 bg-white">
+                        <p class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Payback</p>
+                        <p class="text-xl font-semibold text-zinc-900 mt-1">{{ model.get('payback_period', 'N/A') }} Yrs</p>
                     </div>
                 </div>
 
-                <!-- Historical Liquidity Ratios -->
-                <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6">
-                    <h3 class="text-lg font-semibold text-white mb-4">3-Year Historical Liquidity Ratios</h3>
-                    <div class="overflow-x-auto">
+                <!-- Historical Ratios Table -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Historical Liquidity Ratios</h3>
+                    <div class="border border-zinc-200 rounded-lg overflow-hidden">
                         <table class="w-full text-left text-sm">
-                            <thead class="text-xs font-mono text-gray-400 border-b border-gray-700">
+                            <thead class="bg-zinc-50 border-b border-zinc-200 text-xs font-medium text-zinc-500">
                                 <tr>
-                                    <th class="pb-3">Metric</th>
-                                    <th class="pb-3">2022</th>
-                                    <th class="pb-3">2023</th>
-                                    <th class="pb-3">2024</th>
+                                    <th class="py-2.5 px-4">Ratio</th>
+                                    <th class="py-2.5 px-4 text-right">2022</th>
+                                    <th class="py-2.5 px-4 text-right">2023</th>
+                                    <th class="py-2.5 px-4 text-right">2024</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-800">
+                            <tbody class="divide-y divide-zinc-200 font-mono text-xs text-zinc-700">
                                 <tr>
-                                    <td class="py-3 font-medium text-gray-300">Current Ratio</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2022.Current_Ratio }}</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2023.Current_Ratio }}</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2024.Current_Ratio }}</td>
+                                    <td class="py-3 px-4 font-sans text-sm text-zinc-900 font-medium">Current Ratio</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2022', {}).get('Current_Ratio', 'N/A') }}</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2023', {}).get('Current_Ratio', 'N/A') }}</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2024', {}).get('Current_Ratio', 'N/A') }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 font-medium text-gray-300">Quick Ratio</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2022.Quick_Ratio }}</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2023.Quick_Ratio }}</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2024.Quick_Ratio }}</td>
+                                    <td class="py-3 px-4 font-sans text-sm text-zinc-900 font-medium">Quick Ratio</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2022', {}).get('Quick_Ratio', 'N/A') }}</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2023', {}).get('Quick_Ratio', 'N/A') }}</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2024', {}).get('Quick_Ratio', 'N/A') }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 font-medium text-gray-300">Cash Ratio</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2022.Cash_Ratio }}</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2023.Cash_Ratio }}</td>
-                                    <td class="py-3 text-gray-400">{{ liquidity.Year_2024.Cash_Ratio }}</td>
+                                    <td class="py-3 px-4 font-sans text-sm text-zinc-900 font-medium">Cash Ratio</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2022', {}).get('Cash_Ratio', 'N/A') }}</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2023', {}).get('Cash_Ratio', 'N/A') }}</td>
+                                    <td class="py-3 px-4 text-right">{{ liquidity.get('Year_2024', {}).get('Cash_Ratio', 'N/A') }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Projected Free Cash Flows -->
-                <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6">
-                    <h3 class="text-lg font-semibold text-white mb-4">5-Year Projected Cash Flows</h3>
-                    <div class="overflow-x-auto">
+                <!-- 5-Year DCF Table -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400">5-Year Projected Cash Flows</h3>
+                    <div class="border border-zinc-200 rounded-lg overflow-hidden">
                         <table class="w-full text-left text-sm">
-                            <thead class="text-xs font-mono text-gray-400 border-b border-gray-700">
+                            <thead class="bg-zinc-50 border-b border-zinc-200 text-xs font-medium text-zinc-500">
                                 <tr>
-                                    <th class="pb-3">Period</th>
-                                    <th class="pb-3">Projected FCF ($)</th>
-                                    <th class="pb-3">Discounted FCF ($)</th>
+                                    <th class="py-2.5 px-4">Period</th>
+                                    <th class="py-2.5 px-4 text-right">Projected FCF ($)</th>
+                                    <th class="py-2.5 px-4 text-right">Discounted FCF ($)</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-800">
-                                {% for i in range(model.years|length) %}
-                                <tr>
-                                    <td class="py-3 font-medium text-gray-300">{{ model.years[i] }}</td>
-                                    <td class="py-3 text-gray-400">${{ "{:,.0f}".format(model.projected_fcf[i]) }}</td>
-                                    <td class="py-3 text-gray-400">${{ "{:,.0f}".format(model.discounted_fcf[i]) }}</td>
-                                </tr>
-                                {% endfor %}
+                            <tbody class="divide-y divide-zinc-200 font-mono text-xs text-zinc-700">
+                                {% if model.get('years') %}
+                                    {% for i in range(model.years|length) %}
+                                    <tr>
+                                        <td class="py-3 px-4 font-sans text-sm text-zinc-900 font-medium">{{ model.years[i] }}</td>
+                                        <td class="py-3 px-4 text-right">${{ "{:,.0f}".format(model.projected_fcf[i]) }}</td>
+                                        <td class="py-3 px-4 text-right">${{ "{:,.0f}".format(model.discounted_fcf[i]) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 </body>
 </html>
